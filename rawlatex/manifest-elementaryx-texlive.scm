@@ -12,4 +12,5 @@
         "texlive-wasy"
         "texlive-beamer"
         "python-pygments"
-        "inkscape"))
+        "inkscape"
+        "emacs-elementaryx-ox-beamer-minimal"))
