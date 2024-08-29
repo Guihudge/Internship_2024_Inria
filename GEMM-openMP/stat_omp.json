@@ -1,0 +1,770 @@
+[
+    {
+        "init": 8371,
+        "compute": 7028,
+        "nbThread": 1,
+        "blockSize": 625
+    },
+    {
+        "init": 8465,
+        "compute": 7134,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 5163,
+        "compute": 4150,
+        "nbThread": 2,
+        "blockSize": 625
+    },
+    {
+        "init": 4999,
+        "compute": 3634,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 3710,
+        "compute": 2883,
+        "nbThread": 3,
+        "blockSize": 625
+    },
+    {
+        "init": 3787,
+        "compute": 2499,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 3125,
+        "compute": 2117,
+        "nbThread": 4,
+        "blockSize": 625
+    },
+    {
+        "init": 3111,
+        "compute": 1894,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2790,
+        "compute": 1701,
+        "nbThread": 5,
+        "blockSize": 625
+    },
+    {
+        "init": 2796,
+        "compute": 1548,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2507,
+        "compute": 1448,
+        "nbThread": 6,
+        "blockSize": 625
+    },
+    {
+        "init": 2462,
+        "compute": 1296,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2416,
+        "compute": 1351,
+        "nbThread": 7,
+        "blockSize": 625
+    },
+    {
+        "init": 2343,
+        "compute": 1152,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2217,
+        "compute": 1130,
+        "nbThread": 8,
+        "blockSize": 625
+    },
+    {
+        "init": 2153,
+        "compute": 994,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2215,
+        "compute": 1075,
+        "nbThread": 9,
+        "blockSize": 625
+    },
+    {
+        "init": 2148,
+        "compute": 974,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2014,
+        "compute": 988,
+        "nbThread": 10,
+        "blockSize": 625
+    },
+    {
+        "init": 1998,
+        "compute": 819,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2144,
+        "compute": 873,
+        "nbThread": 11,
+        "blockSize": 625
+    },
+    {
+        "init": 2052,
+        "compute": 775,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1903,
+        "compute": 843,
+        "nbThread": 12,
+        "blockSize": 625
+    },
+    {
+        "init": 1919,
+        "compute": 705,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2003,
+        "compute": 744,
+        "nbThread": 13,
+        "blockSize": 625
+    },
+    {
+        "init": 1905,
+        "compute": 692,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1814,
+        "compute": 732,
+        "nbThread": 14,
+        "blockSize": 625
+    },
+    {
+        "init": 1807,
+        "compute": 617,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1866,
+        "compute": 744,
+        "nbThread": 15,
+        "blockSize": 625
+    },
+    {
+        "init": 1806,
+        "compute": 592,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1745,
+        "compute": 613,
+        "nbThread": 16,
+        "blockSize": 625
+    },
+    {
+        "init": 1718,
+        "compute": 550,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1821,
+        "compute": 630,
+        "nbThread": 17,
+        "blockSize": 625
+    },
+    {
+        "init": 1759,
+        "compute": 629,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1684,
+        "compute": 635,
+        "nbThread": 18,
+        "blockSize": 625
+    },
+    {
+        "init": 1719,
+        "compute": 500,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1746,
+        "compute": 601,
+        "nbThread": 19,
+        "blockSize": 625
+    },
+    {
+        "init": 1743,
+        "compute": 584,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1639,
+        "compute": 611,
+        "nbThread": 20,
+        "blockSize": 625
+    },
+    {
+        "init": 1657,
+        "compute": 459,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1695,
+        "compute": 568,
+        "nbThread": 21,
+        "blockSize": 625
+    },
+    {
+        "init": 1740,
+        "compute": 492,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1618,
+        "compute": 491,
+        "nbThread": 22,
+        "blockSize": 625
+    },
+    {
+        "init": 1620,
+        "compute": 437,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1669,
+        "compute": 483,
+        "nbThread": 23,
+        "blockSize": 625
+    },
+    {
+        "init": 1701,
+        "compute": 435,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1577,
+        "compute": 492,
+        "nbThread": 24,
+        "blockSize": 625
+    },
+    {
+        "init": 1612,
+        "compute": 399,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1648,
+        "compute": 507,
+        "nbThread": 25,
+        "blockSize": 625
+    },
+    {
+        "init": 1562,
+        "compute": 414,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1551,
+        "compute": 516,
+        "nbThread": 26,
+        "blockSize": 625
+    },
+    {
+        "init": 1594,
+        "compute": 390,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1597,
+        "compute": 509,
+        "nbThread": 27,
+        "blockSize": 625
+    },
+    {
+        "init": 1677,
+        "compute": 395,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1561,
+        "compute": 517,
+        "nbThread": 28,
+        "blockSize": 625
+    },
+    {
+        "init": 1555,
+        "compute": 368,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1591,
+        "compute": 549,
+        "nbThread": 29,
+        "blockSize": 625
+    },
+    {
+        "init": 1643,
+        "compute": 409,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1561,
+        "compute": 502,
+        "nbThread": 30,
+        "blockSize": 625
+    },
+    {
+        "init": 1615,
+        "compute": 364,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1594,
+        "compute": 504,
+        "nbThread": 31,
+        "blockSize": 625
+    },
+    {
+        "init": 1587,
+        "compute": 357,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1532,
+        "compute": 392,
+        "nbThread": 32,
+        "blockSize": 625
+    },
+    {
+        "init": 1543,
+        "compute": 343,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1560,
+        "compute": 376,
+        "nbThread": 33,
+        "blockSize": 625
+    },
+    {
+        "init": 1587,
+        "compute": 522,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1558,
+        "compute": 366,
+        "nbThread": 34,
+        "blockSize": 625
+    },
+    {
+        "init": 1576,
+        "compute": 454,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1553,
+        "compute": 374,
+        "nbThread": 35,
+        "blockSize": 625
+    },
+    {
+        "init": 1610,
+        "compute": 440,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1566,
+        "compute": 379,
+        "nbThread": 36,
+        "blockSize": 625
+    },
+    {
+        "init": 1606,
+        "compute": 394,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1560,
+        "compute": 377,
+        "nbThread": 37,
+        "blockSize": 625
+    },
+    {
+        "init": 1595,
+        "compute": 401,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1569,
+        "compute": 367,
+        "nbThread": 38,
+        "blockSize": 625
+    },
+    {
+        "init": 1593,
+        "compute": 413,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1636,
+        "compute": 377,
+        "nbThread": 39,
+        "blockSize": 625
+    },
+    {
+        "init": 1578,
+        "compute": 494,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1563,
+        "compute": 374,
+        "nbThread": 40,
+        "blockSize": 625
+    },
+    {
+        "init": 1553,
+        "compute": 354,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1637,
+        "compute": 385,
+        "nbThread": 41,
+        "blockSize": 625
+    },
+    {
+        "init": 1589,
+        "compute": 446,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1753,
+        "compute": 381,
+        "nbThread": 42,
+        "blockSize": 625
+    },
+    {
+        "init": 1585,
+        "compute": 408,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1677,
+        "compute": 384,
+        "nbThread": 43,
+        "blockSize": 625
+    },
+    {
+        "init": 1597,
+        "compute": 474,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1725,
+        "compute": 382,
+        "nbThread": 44,
+        "blockSize": 625
+    },
+    {
+        "init": 1773,
+        "compute": 364,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1704,
+        "compute": 357,
+        "nbThread": 45,
+        "blockSize": 625
+    },
+    {
+        "init": 1575,
+        "compute": 566,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1658,
+        "compute": 402,
+        "nbThread": 46,
+        "blockSize": 625
+    },
+    {
+        "init": 1620,
+        "compute": 415,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1640,
+        "compute": 379,
+        "nbThread": 47,
+        "blockSize": 625
+    },
+    {
+        "init": 1757,
+        "compute": 557,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1780,
+        "compute": 369,
+        "nbThread": 48,
+        "blockSize": 625
+    },
+    {
+        "init": 1802,
+        "compute": 382,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1678,
+        "compute": 369,
+        "nbThread": 49,
+        "blockSize": 625
+    },
+    {
+        "init": 1716,
+        "compute": 473,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1783,
+        "compute": 380,
+        "nbThread": 50,
+        "blockSize": 625
+    },
+    {
+        "init": 1655,
+        "compute": 495,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1815,
+        "compute": 372,
+        "nbThread": 51,
+        "blockSize": 625
+    },
+    {
+        "init": 1805,
+        "compute": 551,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2088,
+        "compute": 377,
+        "nbThread": 52,
+        "blockSize": 625
+    },
+    {
+        "init": 1963,
+        "compute": 369,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1735,
+        "compute": 373,
+        "nbThread": 53,
+        "blockSize": 625
+    },
+    {
+        "init": 1672,
+        "compute": 399,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1724,
+        "compute": 399,
+        "nbThread": 54,
+        "blockSize": 625
+    },
+    {
+        "init": 1670,
+        "compute": 576,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1816,
+        "compute": 389,
+        "nbThread": 55,
+        "blockSize": 625
+    },
+    {
+        "init": 1582,
+        "compute": 490,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1925,
+        "compute": 373,
+        "nbThread": 56,
+        "blockSize": 625
+    },
+    {
+        "init": 2247,
+        "compute": 522,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1777,
+        "compute": 384,
+        "nbThread": 57,
+        "blockSize": 625
+    },
+    {
+        "init": 1660,
+        "compute": 508,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1740,
+        "compute": 393,
+        "nbThread": 58,
+        "blockSize": 625
+    },
+    {
+        "init": 1793,
+        "compute": 609,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1754,
+        "compute": 360,
+        "nbThread": 59,
+        "blockSize": 625
+    },
+    {
+        "init": 1675,
+        "compute": 544,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1886,
+        "compute": 366,
+        "nbThread": 60,
+        "blockSize": 625
+    },
+    {
+        "init": 2112,
+        "compute": 450,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1681,
+        "compute": 372,
+        "nbThread": 61,
+        "blockSize": 625
+    },
+    {
+        "init": 1632,
+        "compute": 667,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1698,
+        "compute": 341,
+        "nbThread": 62,
+        "blockSize": 625
+    },
+    {
+        "init": 1739,
+        "compute": 503,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 1724,
+        "compute": 369,
+        "nbThread": 63,
+        "blockSize": 625
+    },
+    {
+        "init": 1756,
+        "compute": 496,
+        "nbThread": 1,
+        "blockSize": 5000
+    },
+    {
+        "init": 2541,
+        "compute": 294,
+        "nbThread": 64,
+        "blockSize": 625
+    },
+    {
+        "init": 2292,
+        "compute": 566,
+        "nbThread": 1,
+        "blockSize": 5000
+    }
+]

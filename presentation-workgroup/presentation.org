@@ -1,0 +1,124 @@
+#+title: Présentation Workshop 2024
+#+author: Aurelien, Hugo & Guillaume
+#+date: 5 mai 2024
+# Local Variables:
+# jinx-languages: "fr_FR"
+# End:
+
+* Factorisation LU
+* Parallélisme par taches
+
+** GEMM
+$ C_{ij} = \sum_{k=0}^{K} A_{ik} B_{kj} $
+
+** GEMM
+
+Example avec:
+    - i=2, j=1
+
+$ C_{21} = A_{20}\times B{01} + A_{21}\times B{11} + A_{22}\times B{21} $
+
+** Modèle d'éxécution: MPI
+
+*** Explication                                           :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.8
+    :END:
+    - 
+
+*** Propriétés                                            :BMCOL:B_example:
+    :PROPERTIES:
+    :BEAMER_col: 0.2
+    :BEAMER_env: example
+    :END:
+    - Cible: Mémoire distribuée
+    - Dépendance expplicite
+    - Flux de controle distribuée
+    - Exécution: "In Order (IO)"
+
+** Modèle d'éxécution: tâches OpenMP
+
+*** Explication                                           :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.8
+    :END:
+    - this slide consists of two columns
+    - the first (left) column has no heading and consists of text
+    - the second (right) column has an image and is enclosed in an
+      *example* block
+
+*** Propriétés                                            :BMCOL:B_example:
+    :PROPERTIES:
+    :BEAMER_col: 0.2
+    :BEAMER_env: example
+    :END:
+    - Cible: Mémoire unifié
+    - Dépendance implicite (sur les données)
+    - Maitre/esclave
+    - Exécution: "Out Of Order (OOO)"
+
+** Modèle d'éxécution: tâches OpenMP + MPI
+
+*** Explication                                           :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.8
+    :END:
+    - this slide consists of two columns
+    - the first (left) column has no heading and consists of text
+    - the second (right) column has an image and is enclosed in an
+      *example* block
+
+*** Propriétés                                            :BMCOL:B_example:
+    :PROPERTIES:
+    :BEAMER_col: 0.2
+    :BEAMER_env: example
+    :END:
+    - Cible: Mémoire distribuée
+    - Dépendance implicite (sur les données, sur un même neuds) / explicite entre les noeud
+    - Maitre/esclave (sur un noeud) + Flux de controle sur tout les noeuds
+    - Exécution: "In Order"
+
+** Modèle d'éxécution: STF/Chameleon
+
+*** Explication                                           :BMCOL:
+    :PROPERTIES:
+    :BEAMER_col: 0.8
+    :END:
+    - this slide consists of two columns
+    - the first (left) column has no heading and consists of text
+    - the second (right) column has an image and is enclosed in an
+      *example* block
+
+*** Propriétés                                            :BMCOL:B_example:
+    :PROPERTIES:
+    :BEAMER_col: 0.2
+    :BEAMER_env: example
+    :END:
+    - Cible: Distribuée multinoeud
+    - Implicite dependency
+    - Maitre/esclave dans un noeuds / Distributde controle ntre les noeuds
+    - Exécution: "Out Of Order (OOO)"
+
+** Résultat
+
+Résultat préliminaire
+TODO: Ajouter graphe
+
+** Suite
+- Actuellement montré avec C-stat, aussie possible en :
+    - A-stat
+    - B-stat
+    - Aléatoire (principalement pour du debug)
+
+(En cours de validation)
+
+** Suite
+- Passage à StarPU
+    - Dépendances implicite
+    - Dépendances explicite
+
+- Pipline entre les étapes
+
+* Vectorisation automatique
+
+

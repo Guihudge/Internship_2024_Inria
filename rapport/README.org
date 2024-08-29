@@ -1,0 +1,1001 @@
+#+TITLE: Rapport de stage
+#+AUTHOR:
+#+INCLUDE: https://gitlab.inria.fr/elementaryx/emacs-elementaryx-ox-html-themes/-/raw/main/org/theme-bigblow-less.setup
+#+LANGUAGE: fr
+#+OPTIONS: toc:nil
+# jinx-languages: "fr_FR"
+#+bibliography: bliblio.bib
+#+latex_header: \author{Guillaume Dindart \\ \small Gilles MARAIT (Encadrant), Emmanuel AGULLO (Encadrant) \\ Équipe Concace INRIA}
+#+latex_header: \usepackage[a4paper, hmarginratio=1:1,vmarginratio=1:1,left=20mm,top=22mm,columnsep=20pt]{geometry} % Document margins
+
+
+
+#+BEGIN_CENTER
+#+attr_html: :height 100px
+[[./images/concace-logo.png]]
+#+attr_html: :height 100px
+[[./images/ub-logo.png]]
+#+END_CENTER
+
+#+latex: \newpage
+
+#+latex: \tableofcontents
+
+#+latex: \newpage
+
+* Introduction
+:PROPERTIES:
+:CUSTOM_ID: introduction
+:END:
+Du mois de mai au mois d'août 2024, j'ai réalisé un stage au sein de l'INRIA et plus précisément dans l'équipe Concace. Ce stage avait pour objectif de développer un moteur d'exécution asynchrone à base de tâches pour Composyx. Durant ce stage, j'ai pu produire des preuves de concepts reposant sur la combinaison de OpenMP et MPI et sur la librairie StarPU.
+Ce rapport se compose d'une présentation générale du cadre et des outils utilisés suivie des principes utilisés et d'une explication des réalisations.
+
+* Présentation  
+:PROPERTIES:
+:CUSTOM_ID: presentation
+:END:
+
+** Inria
+L'Inria, Institut National de Recherche en Informatique et en Automatique est un établissement de recherche public fondé en 1967. Ses principaux domaines de recherche sont les mathématiques appliquées et l'informatique. Son objectif est de mener et de développer des recherches dans les domaines des sciences, des technologies de l'information et de la communication, tant au niveau national qu'international. Inria est un laboratoire de recherche de classe mondiale disposant de plusieurs centres répartis sur l'ensemble du territoire français. J'ai été accueilli au centre Inria de l'université de Bordeaux. Il y a environ 260 personnes qui y travaillent, réparties en 18 équipes de recherche. L'Inria dispose de plusieurs collaborations avec le monde industriel avec de grands groupes comme Thales ou Airbus mais aussi des startups.
+
+
+** Équipe Concace
+:PROPERTIES:
+:CUSTOM_ID: concace
+:END:
+
+# Présentation de l'équipe concace
+J'ai réalisé mon stage au sein de l'équipe Concace [cite:@concace] de l'Inria. L'équipe Concace est une collaboration entre l'Inria, le CERFACS et Airbus. Elle est présente sur trois sites : Paris, Toulouse et Bordeaux. Son objectif est de proposer des outils de hauts niveaux pour exploiter les architectures HPC modernes en poussant la composabilité des logiciels. Ceci dans le l'objectif final de permettre à des équipes loin du monde du HPC de réaliser des applications efficaces sur les supercalculateurs. L'un de leurs principaux projets est le développement de la bibliothèque composyx.
+
+# TODO: Expliquer composabilité
+
+** Composyx
+Composyx [cite:@composyx], est une librairie d'algèbre linéaire centrée sur la composabilité. Son objectif est de permettre à l'utilisateur d'exprimer son programme à haut niveau puis de le rendre efficace au travers de plusieurs approches de parallélisation. Elle est écrite en C++20 et se base sur plusieurs codes références du domaine.
+
+** Outils utilisés durant le stage
+Durant ce stage, j'ai été amené à découvrir et utiliser de nouveaux outils. Voici les principaux :
+- Org-mode [cite:@org-mode] : est une extension d'Emacs. Elle a pour objectif d'aider à organiser, à rédiger des documents, des notebook mais aussi de permettre la programmation lettrée [cite:@frwiki:literateProg]. Dans le cadre de mon stage, j'ai été amené à l'utiliser pour développer dans composyx qui utilise majoritairement la programmation lettrée.
+- Guix [cite:@Guix] : est une distribution GNU/Linux ainsi qu'un gestionnaire de paquets qui met l'accent sur la reproductibilité. Dans le cadre de mon stage, je l'ai uniquement utilisé en tant que gestionnaire de paquets.
+- Elementaryx [cite:@elementaryx] : Elementaryx est un IDE basé sur Emacs développé par un membre de l'équipe Concace. Il permet de facilement interfacer Guix avec le logiciel que l'on développe.
+  
+** Bibliothèques logicielles utilisées
+Au cours de mon stage, j'ai été amené à manipuler plusieurs bibliothèques et interfaces de parallélisation afin de paralléliser le code.
+- MPI [cite:@MPI] : Message Passing Interface est une interface de communication inter-processus. Dans le cadre de mon stage, je l'ai utilisée en combinaison de OpenMP pour permettre la communication entre plusieurs nœuds de calculs.
+- OpenMP [cite:@openMP] : Open Multi-Processing est une interface de programmation pour le calcul parallèle sur des architectures à mémoire partagée. Pour mon stage, j'ai utilisée sa fonctionnalité de programmation par tâches.
+- StarPU [cite:@starPU] : est une bibliothèque de programmation par tâches pour des machines hétérogènes. Je l'ai utilisée pour remplacer OpenMP et MPI car elle présente l'avantage de permettre la définition de dépendances statiques entre les tâches de calcul.
+
+* Objectifs du stage
+:PROPERTIES:
+:CUSTOM_ID: objectifs
+:END:
+
+L'objectif de ce stage est à terme de s'interconnecter avec d'autres stages en cours au sein de l'équipe afin de fournir une solution de parallélisation. Plus précisément, dans mon stage, je suis chargé de développer une solution de parallélisation utilisant des tâches capables de réaliser des métaopérations. Ce moteur devra pouvoir choisir entre plusieurs backend de parallélisation tels que StarPU, OpenMP ou MPI. Pour faire fonctionner les métaopréations, il y a besoin de noyaux de calcul. C'est ici que le stage d'Aurélien Gauthier entre en jeu. Durant son stage, il développe un moyen de générer automatiquement des versions vectorisées et GPU d'un code. Les versions vectorisées et GPU générées pourront alors alimenter les métaopérations du moteur d'exécution. L'objectif ultime des stages et de la thèse d'Hugo Dodelin est de pouvoir pipeliner les métaopréations afin de pouvoir éviter au maximum les synchronisations et ainsi proposer une interface de parallélisation simple pour exprimer des algorithmes plus compliqués tels que la factorisation LU. Plus précisément, mon stage se concentre sur la parallélisation à moyen grain, c'est-à-dire comment bien paralléliser les tâches entre elles sur les différents cœurs d'un CPU et entre plusieurs nœuds. Le stage d'Aurélien se concentre lui sur la parallélisation à grain fin, c'est-à-dire sur le code qui tourne dans les tâches en elle-même. 
+
+
+
+* Principe théorique
+:PROPERTIES:
+:CUSTOM_ID: theorique
+:END:
+
+** Programmation à base de tâches
+La programmation à base de tâches, ou, par tâches, consiste à exprimer le parallélisme via des tâches. Dans un premier temps, on a défini dans notre code un ensemble de tâches comme calculer la valeur des deux variables A et B. Puis, on soumet ces tâches au support d'exécution ou runtime, dans le cadre de mon stage, OpenMP ou StarPU. Une fois que le runtime commence à recevoir des tâches, il va commencer à les exécuter sans que l'on ait besoin de lui dire explicitement. De plus, le support d'exécution va aussi se charger de définir l'ordre d'exécution des tâches en fonction des dépendances. Ces dépendances peuvent être sur les données, par exemple pour calculer B on a besoin de la variable A. Le support d'exécution va alors créer un graphe des tâches à partir des informations sur les données et comment elles sont utilisées (lecture, écriture ou lecture et écriture). Une autre solution est que le développeur donne explicitement dans le code les dépendances afin d'essayer de réduire le temps de calcul du backend de parallélisation car on n'a pas à construire le graphe de tâche à partir des dépendances sur les données.
+
+#+CAPTION: Exemple de graphe des tâches pour la multiplication de 3 matrices avec un MapReduce
+#+ATTR_HTML: :width 50% :height 50%
+#+ATTR_LATEX: :width 0.5\textwidth
+[[./images/dag.svg]]
+
+#+latex: \pagebreak
+
+* Modèles de programmation et d'exécution
+:PROPERTIES:
+:CUSTOM_ID: models
+:END:
+
+Composyx est conçu en couches, chacune de ces couches remplie une fonction spécifique qui peut contenir plusieurs implémentations comme montré dans la figure [[coucheComposyx]]. L'idée d'utiliser des couches pouvant contenir plusieurs implémentations est de pouvoir s'adapter au mieux à l'environnement de l'utilisateur. Dans le cadre de mon stage, j'ai travaillé sur deux de ces couches appelées "modèle de programmation" et "Modèle d'exécution". Je vais expliquer leur principe dans la suite de cette section et présenter les travaux sur lesquels j'ai basé mes implémentations.
+
+# Durant ce stage, j'ai été amené à travailler sur deux modèles présent dans composyx. L'idée d'utiliser des modèles est de pouvoir créer différentes implémentations qui correspondent à ce modèle et qui peuvent être interchangées à la demande de l'utilisateur ou dynamiquement en fonction de l'environnement d'exécution du code.
+
+#+CAPTION: Schéma des différentes couches.
+#+NAME: coucheComposyx
+[[./images/Couche_composyx.drawio.svg]]
+
+** Modèle de programmation
+
+Le modèle de programmation correspond à comment le code va être écrit par le développeur. Il va permettre par la suite de détecter la meilleure manière de paralléliser le code. Dans notre cas, on va utiliser le Sequential Task Flow (STF) et une métaopération le MapReduce.
+
+*** Sequential Task Flow (STF)
+Le Sequential Task Flow (STF) ou Flot de Tâches séquentiel est une manière de construire les tâches associées à un problème. Pour fonctionner, il se sert de la cohérence séquentielle du code. C'est-à-dire, il va générer les tâches et calculer leurs dépendances au fur et à mesure qu'un processus déroule le code et découvre les tâches demandées dedans. Pour les dépendances entre les tâches, il utilise généralement les données. C'est un des modèles utilisés car il passe à l'échelle sans trop de difficultés et reste dans la logique générale de la programmation, à savoir, faire une suite de tâches de manière séquentielle.
+
+Voici un exemple pour le GEMM:
+
+#+begin_export latex
+\begin{algorithm2e}[H]
+Calcule C = A*B
+
+\For{$\forall i$}{
+\For{$\forall j$}{
+\For{$\forall k$}{
+C[i,j] += A[i,k] * B[k,j]
+}
+}
+}
+\caption{Un GEMM en mode STF}
+\end{algorithm2e}
+#+end_export
+
+# Bien que le code soit plus simple que pour le MapReduce, cette version permet moins de parallélisme. En effet, chaque ajout dans C_ij est conditionné par le fait que personne d'autre ne le fasse en même temps. De ce fait le MapReduce permet plus de parallélisation, mais avec un usage mémoire plus important et plus de communications. 
+
+*** MapReduce
+Le MapReduce est une métaopération, qui a été présenté dans le cadre du big data en 2008 par J Dean, S Ghemawat ([cite:@dean2008mapreduce]) puis repris dans le HPC. 
+
+Le MapReduce combine un Map et un Reduce. Le Map est une opération qui consiste à appliquer une fonction de manière indépendante à un ensemble de valeurs indépendantes entre elles. Par exemple : ajouter 1 à chaque coefficient d'une matrice. Le Reduce est une opération de réduction sur un ensemble de données. Par exemple : faire la somme d'un tableau. L'intérêt de combiner ces deux opérations est d'augmenter le parallélisme. Le Map est intrinsèquement parallèle, chaque calcul de valeur étant indépendant des autres, on peut créer autant de tâches que de calculs qui pourront s'exécuter en parallèle. Le Reduce peut au début être exécuté avec beaucoup de parallélisme puis de moins en moins au cours de son exécution. L'intérêt est donc de ne pas attendre que tous les éléments du Map soient calculés, mais de commencer la réduction dès que des éléments compatibles ont fini d'être calculés. Prenons l'exemple de la multiplication de matrices.
+
+L'opération GEneral Matrix Multiplication (GEMM) représente la multiplication de deux matrices A et B, de manière plus générale la formule est : C = \alpha \times A \times B + C \times \beta. Cette formule nous impose la contrainte suivante sur la taille des matrices A(M \times K), B (K \times N) et le résultat C(M \times N). Je vais me servir du GEMM pour faire un exemple de MapReduce. Pour simplifier, on va prendre \alpha=1 et \beta=0 on a donc la formule générale suivante : C_{ij} = \sum_{k=0}^{K} A_{ik} B_{kj}. Pour appliquer le MapReduce avec la formule on va la séparer en deux étapes. La première, le Map, correspond à la multiplication des $A_{ik} \times B_{kj}$. La seconde, le Reduce, correspond à l'opération de somme. Pour l'exprimer dans le code, nous allons nous servir d'une matrice 3D de taille (M \times N \times K) pour stocker les résultats avant la réduction.
+
+Pour le reste du stage, je vais utiliser une variation qui permet d'utiliser des blocs, autrement dit des morceaux de la matrice afin d'exprimer plus de parallélisme. De manière générale le produit se calcule pour un bloc (i, j) de la matrice C avec la formule suivante : C_{ij} = \sum^K_{k=0} A_{ik}B_{kj}.
+
+En pseudo code :
+
+#+begin_export latex
+\begin{algorithm2e}[H]
+Calcule C = A*B
+
+Allocate
+Ctmp[i,j,k]
+
+Map
+
+\For{$\forall i$}{
+\For{$\forall j$}{
+\For{$\forall k$}{
+Ctmp[i,j,k] = A[i,k] * B[k,j]
+}
+}
+}
+
+Reduce
+
+\For{$\forall i$}{
+\For{$\forall j$}{
+C[i,j] = 0
+\For{$\forall k$}{
+C[i,j] += Ctmp[i,j,k]
+}
+}
+}
+\caption{Un GEMM en mode MapReduce}
+\end{algorithm2e}
+#+end_export
+
+Dans le cas du calcul parallèle le MapReduce vient avec le principe de `taskmap` et de `datamap`. Une `taskmap` est une fonction qui permet de déterminer quel processus doit faire quelles réductions. Le `datamap` permet de savoir comment l'objet est distribué entre les processus. Dans notre cas, nous nous servons de ces deux fonctions pour détecter les communications à effectuer.
+
+** Modèle d'exécution
+Le modèle d'exécution correspond à comment le code sera exécuté. Il y a deux modèles principaux le `In Order` (IO) et le `Out Of Order` (OOO). Dans le cas du IO, le code sera exécuté dans l'ordre dans lequel le développeur l'a écrit, dans nos implémentations cela correspond à MPI. Pour le OOO, on ne sait pas exactement l'ordre dans lequelle va s'exécuter le code. Le OOO s'accorde très bien avec la programmation par tâches, le développeur soumet un ensemble de tâches puis le backend les exécute dans l'ordre qu'il veut en respectant les dépendances.
+
+Pour le modèle d'exécution, nous nous sommes concentrés sur 3 approches différentes. Parmi ces approches, il y a la programmation par tâches en mémoire partagée, une version pure MPI en mémoire distribuée ainsi qu'une combinaison des deux pour essayer de tirer parti des deux approches précédentes. 
+
+*** Tâches
+# Master/Slave
+L'utilisation des tâches au sein du programme se base sur le principe de Maître-esclave. Nous avons un groupe de processus esclaves qui attendent des tâches et nous avons le maître qui déroule le programme principal et dès qu'il trouve une tâche, va la soumettre. Une fois une tâche soumise un processus esclave va pouvoir la récupérer et l'exécuter. Cette approche ne fonctionne qu'en mémoire partagée car les tâches partagent la même mémoire que le programme principal et peuvent accéder à ses données. Avec la mémoire partagée, on doit donc mettre en place et utiliser des mécanismes de verrouillage pour éviter que plusieurs tâches n'écrivent en même temps au même endroit de la mémoire.
+
+
+*** Pur MPI
+# Distributed contrôl flow
+
+Les versions MPI utilisent le principe de flux de contrôle distribué, c'est-à-dire que chaque processus va dérouler tout le programme et savoir lui-même quand il doit travailler. Cette approche a l'avantage de travailler en mémoire distribuée, on peut donc utiliser plusieurs ordinateurs (nœuds) en réseaux avec des mémoires séparées donc une mémoire distribuée. Toutefois, il faut noter que dans le cas de MPI c'est au développeur de faire les communications explicitement. On doit donc penser en avance aux communications que l'on doit réaliser au risque d'essayer d'accéder à une donnée inexistante. 
+
+*** Mixte (tâches avec MPI)
+
+La dernière approche utilisée dans mon stage et mise en avant par StarPU est de combiner les deux approches. Sur un même nœud de calcul on utilise le principe de maître esclave avec des tâches de calcul auxquelles on ajoute des tâches de communication. Ces tâches de communication vont être utilisées pour travailler sur les autres nœuds. On a donc un principe maître esclave localement sur un nœud et globalement sur tout le système on utilise le principe de flux de contrôle distribué.
+
+* Réalisations durant le stage
+:PROPERTIES:
+:CUSTOM_ID: realisations
+:END:
+
+** Première version d'un GEMM en tache OpenMP
+La première partie de mon stage a été consacrée à l'écriture d'un premier GEMM en blocs parallèle. Le choix des technologies était libre pour cette première version, je suis donc parti en C++ avec OpenMP pour la parallélisation pour correspondre avec ce que j'avais vu durant le cours de programmation des architectures parallèles (PAP). Cette première version a été pour moi l'occasion de me rappeler des notions de base d'algèbre linéaire sur les matrices telles que leur multiplication. Elle m'a aussi permis de découvrir l'utilisation de la plateforme de calcul parallèle PlaFRIM que j'ai utilisée tout au long de mon stage. Afin de valider les résultats, j'ai utilisé composyx. Puis dans un second temps, j'ai modifié le code effectuant le calcul afin d'utiliser composyx et OpenMP. Le code est dans l'[[#srcOmpTasks]].
+
+
+** Ajout de tâches dans la version actuelle du GEMM de composyx
+Après avoir codé une version du GEMM à l'extérieur de composyx, je suis rentré dans le logiciel. C'est à partir de ce moment que j'ai commencé à utiliser Elementaryx et Org-mode car le cœur de composyx est codé en Org-mode. Au sein de composyx, j'ai principalement travaillé avec les `PartDenseMatrix'. L'objet `PartDenseMatrix` représente une matrice dense qui est stockée de manière distribuée entre les processus. Cet objet est composé lui-même de deux autres objets, un ensemble de matrices locales et une fonction qui, avec les coordonnées d'un bloc, nous donne le processus qui contient les données du bloc en question. Cette répartition des données entre les processus, nous oblige donc à réaliser des communications entre processus lors des calculs. Cette version se concentrait majoritairement sur la transformation des produits en tâches et à tester l'intégration d'OpenMP dans composyx.
+
+Le code est diponible dans l'[[#srcFirstTasks]].
+
+Avec le code écrit, nous allons maintenant mesurer ses performances. Pour ce faire nous allons nous servir d'un outil intégré à composyx qui permet de calculer les performances obtenues par le GEMM. Cet outil nous donne une valeur en GFlop/s, 1 Flop représente une opération élémentaire sur un réel à virgule flottante. Afin de ne pas comparer nos résultats à rien, nous utilisons le code référence du domaine à savoir Chameleon [cite:@chameleon]. Chameleon est une bibliothèque C qui fournit des algorithmes parallèles d'algèbre linéaire.
+
+#+ATTR_LATEX: :width 0.5\textwidth
+#+CAPTION: Performance en GFlop/s de la première implémentation.
+#+NAME: perf1
+[[./images/composyx_mpi_task.png]]
+
+Les résultats ([[perf1]]) obtenus peuvent sembler mauvais. On atteint environ 50% de la performance de chameleon dans le meilleur des cas. Mais il ne faut pas oublier que Chameleon a plus de 10 ans de développement et d'optimisation derrière lui. On ne peut donc pas s'attendre à obtenir des performances équivalentes dans la durée du stage. On remarque que les résultats semblent logiques. Sur l'axe des abscisses nous faisons varier la taille des blocs. La taille d'un bloc est proportionnel à une sous matrice passée à une tâche. Une tâche Map reçoit deux blocs qu'elle va multiplier entre eux puis stocker le résultat dans un troisième. Pour une tâche Reduce, elle va recevoir K+1 blocs pour effectuer la réduction et stocker le résultat dans le bloc en plus. Les blocs étant partagés sur plusieurs processus, il faut se les échanger avant d'effectuer le calcul, on fait donc des communications. Une communication peut être séparée en 2 parties, l'initialisation et la transition des données. L'initialisation prend globalement toujours le même temps, la transmission des données varie en fonction de la quantité de données. Il faut aussi noter que soumettre une tâche à un coût dans le runtime. En augmentant la taille des blocs, on va diminuer la quantité de transmissions et la quantité de tâches soumises. Cela aura pour effet de minimiser le temps d'initialisation de la communication ou de la soumission de la tâche par rapport au calcul. C'est pourquoi les performances augmentent au début du graphe pour atteindre leur pic vers 1800. En continuant d'augmenter il n'y a plus assez de travail pour tous les cœurs CPU, on perd donc en parallélisme, donc en performances.
+
+** Version en tâches pure
+Après l'introduction des premières tâches, nous avons pu vérifier que tout fonctionne bien au sein de composyx et que cela semble viable. J'ai donc réalisé une version avec uniquement des tâches où le Map, le Reduce et les communications sont des tâches. Cette version utilise toujours OpenMP + MPI. En mémoire partagée on utilise OpenMP pour les tâches et MPI pour communiquer entre les processus. Cela nous fait donc une version qui combine les paradigmes de parallélisation, à savoir Master/Slave sur un processus et un flux de contrôle distribué entre les processus (chaque nœud déroule le programme de son côté) tout en combinant aussi les dépendances, où nous avons des dépendances explicites entre les processus et implicites basées sur les données sur un nœud. Cette version correspond au code de l'[[#srcPureTasks]].
+
+Avec le code écrit, nous allons pouvoir vérifier le résultat produit ainsi que les performances, bien que les performances ne soient pas l'objectif du stage. Pour vérifier que les résultats sons corrects, nous calculons l'erreur relative par rapport au code de référence de composyx.
+
+# TODO: resultat d'exp + perfs
+#+ATTR_LATEX: :width 0.5\textwidth
+#+CAPTION: Benchemark de la version en "full task"
+[[./images/composyx_full_task.png]]
+
+Comme nous le voyons sur ce graphe les performances sont proches de la version précédente. Cela semble cohérent car techniquement les deux codes sont très proches l'un de l'autre et les possibles gains du passage en tâches pures sont rattrapés par le fait que l'on soumet beaucoup plus de tâche il y a donc plus de travail de la part du runtime. Pour la validité des résultats on peut voir un exemple d'exécution en annexe ([[#pureTaskRep]]). Sur cet exemple, l'erreur calculée est d'environ 9e-17. Cette erreur provient de l'arrondi des nombres flottants, aussi connu sous le nom d'epsilon machine [cite:@enwiki:1225237390], on peut donc en déduire que le résultat est correct.
+
+# Remplacement des communication par des tâche de communication
+# Premier bench et campagne d'exp
+
+** Passage de OpenMP à StarPU
+Dans l'objectif de passer à une version avec des dépendances purement explicites, nous avons migré le code de OpenMP-MPI vers StarPU. StarPU ne repose pas sur le principe de pragma, mais de codelet. Un codelet est un ou plusieurs morceaux de code effectuant une tâche donnée. L'intérêt d'utiliser un codelet plutôt que les pragma, réside dans le fait qu'il est possible de donner plusieurs versions du code différentes en fonction d'où on exécute le codelet. Par exemple un même codelet peut à la fois contenir le code CPU, un code CPU vectorisé et un code GPU. C'est lors de l'exécution que StarPU décidera lequel utiliser. C'est aussi grâce à ces codelets que StarPU génère le graphe de tâches quand on utilise les données pour générer l'ordre d'exécution. L'autre fonctionnalité de StarPU que l'on va utiliser, ce sont les communications intégrées. L'intérêt des communications intégrées, c'est qu'elles sont gérées par un processus dédié. De cette manière, elles interfèrent très peu avec le calcul.
+
+Voici les codelets utilisés dans le GEMM, l'un correspond au Map et l'autre au Reduce : [[#starpuCodelets]].
+
+
+Dans la première partie du code ci-dessus, nous avons défini deux fonctions. Ces deux fonctions sont des fonctions CPU qui ne sont pas vectorisées. La première fonction représente l'opération Map et la seconde l'opération Reduce. Si l'on regarde de plus près l'une de ces fonctions, on remarque qu'elles sont composées de deux parties. La première partie, qui récupère les données depuis le monde StarPU et la deuxième qui effectue le Map ou la réduction. Après la définition des deux fonctions, il y a deux structures de données. Ce sont ces structures qui créent le codelet. Elles contiennent les informations importantes des codelets, comme les fonctions à exécuter, le nombre de buffers passés à la fonction ainsi que leur mode d'accès. Dans ce cas, nous avons une fonction par codelet mais, lorsque nous utiliseront la génération automatique des noyaux, nous aurons plusieurs fonctions (vectorisée, GPU, ...).
+
+Maintenant que l'on a les codelets de définis, on peut les utiliser pour écrire le GEMM : [[#starpuV1]]
+
+#+ATTR_LATEX: :width 0.5\textwidth
+#+CAPTION: Benchmark de la permière version StarPU
+[[./images/composyx_starpu.png]]
+
+Les performances de la version StarPU sont en dessous des versions précédentes. StarPU est un runtime très complet et modulaire. Il permet de changer beaucoup de choses sous son capot tel que l'ordonnancement des tâches et les communications automatiques. Pour expliquer ces résultats, il est donc probable que les réglages de StarPU ne soient pas bons pour notre cas d'usage. L'objectif du stage se concentrant plutôt sur le fait de montrer que l'approche est valide, on ne va pas creuser plus pour augmenter les performances. L'utilisation de StarPU nous a permis de montrer que l'on est capable de changer de runtime et d'obtenir des résultats toujours valides ([[#starpuRep]]).
+
+# Ajout de StarPU au seins de composyx
+# Réécriture de du produit de gemme en tâche StarPU
+
+** Passage à des dépendances purement explicites
+Sur les versions précédentes, les dépendances étaient déterminées grâce au mode d'accès des données. Cette manière de faire est utile quand on ne connaît pas le parallélisme possible d'un code à l'avance. Or, dans notre cas, nous connaissons déjà le parallélisme possible. La suite va donc consister à écrire une version StarPU avec des dépendances statiques. Nous utilisons StarPU car OpenMP ne permet pas de décrire des dépendances statiques. Nous espérons que cette approche nous permettra de mieux abstraire les métaopérations et permettra un meilleur lien entre elles. Un autre avantage de cette approche est que cela permet d'éviter au runtime de calculer le graphe de dépendance car on le lui décrit explicitement dans le code.
+
+Les codelets utilisés restent les mêmes, nous ne les redéfinissons donc pas. Le code est dans l'[[#starpuV2]].
+
+
+Sur cette section, il n'y a pas de graphique de performance car le code précédent n'est pas entièrement fonctionnel. Sur des cas avec des grands blocs ou avec des matrices rectangulaires, on obtient des erreurs de segmentation au cours de l'exécution, ou, si l'exécution arrive au bout, les résultats sont incorrects. De plus déboguer ce code s'avère plutôt difficile car les traces d'exécution retournées en cas d'erreurs de segmentation renvoient des adresses mémoires brutes sans indiquer la librairie ou au mieux dans StarPU. L'utilisation de gdb n'aide pas non car Guix (gestionnaire de paquets utilisé pour créer l'environnement de développement) ne permet pas d'obtenir certaines informations de débogage nécessaires au bon fonctionnement de gdb avec des librairies externes. Toutefois, dans l'[[#expStapuRep]] il y a un exemple d'exécution où le code fonctionne correctement, montrant qu'il est partiellement fonctionnel. 
+
+** Opérateur Concurent Map Reduce (CMR)
+Pour la fin du stage, j'ai travaillé avec Hugo Dodelin afin de fusionner son travail sur la factorisation LU et les moteurs d'exécution présentés précédemment. Pour simplifier le développement, nous sommes partis sur la version StarPU avec des tâches basées sur les données. Nous avons choisi cette base car c'est celle qui nous semblait la plus robuste et nécessitant le moins de modifications. Pour garder le code le plus clair possible, on a créé un objet nommé `MatrixMatrix` dans lequel il y a l'opérateur CMR. Nous avons nommé cet opérateur Concurent Map Reduce (CMR). Cet opérateur effectue une opération de Map puis de Reduce. La différence par rapport au GEMM présenté avant est que l'on peut choisir quelle fonction utiliser pour le Map et le Reduce.
+
+Code du CMR: [[#cmr]]
+
+** Pipeline du CMR
+Afin d'améliorer les performances de l'opérateur CMR, nous avons essayé de voir si on pouvait en enchaîner plusieurs en évitant la synchronisation entre eux, autrement dit, de les pipeliner. L'idée est de pouvoir réaliser plusieurs CMR indépendants en même temps, ou dans le cas d'opérations dépendantes, de ne pas devoir attendre que l'entièreté du calcul précédant soit terminée avant de démarrer le suivant. La plus grande difficulté a été de gérer les variables temporaires utilisées par le CMR car nous ne pouvions plus nous reposer sur les portées des variables. Nous avons alors décidé de travailler en trois temps, l'initialisation, le calcul et la finalisation avec une seule synchronisation entre le calcul et la finalisation. Plus précisément, l'initialisation s'occupe d'allouer les variables temporaires utilisées par les calculs. Le calcul va générer les différentes tâches de Map et Reduce. Pour finir, la finalisation va s'occuper de libérer la mémoire allouée. Grâce à ce travail en trois temps, nous pouvons générer les tâches de calcul sans avoir à attendre à la fin de chaque opérateur.
+
+Le code de la version pipeliné, nécessite d'ajouter une initialisation afin de conserver correctement les structures temporaires utilisées par les calculs.
+
+Code de l'initialisation: [[#initCmr]]
+
+Avec cette modification réalisée, nous observons une réduction d'environ 10% du temps de calcul. Cela se confirme grâce aux statistiques générées pendant l'exécution où le temps d'attente des CPU est inférieur en cas d'utilisation de la pipeline.
+
+#+CAPTION: Statistique d'éxécution avec la pipeline désactivé
+#+ATTR_HTML: :width 100%
+[[./images/CMR_pipeline/no-pipeline.svg]]
+
+#+CAPTION: Statistique d'éxécution avec la pipeline d'activé
+#+ATTR_HTML: :width 100%
+[[./images/CMR_pipeline/pipeline.svg]]
+
+
+* Conclusion
+:PROPERTIES:
+:CUSTOM_ID: conclusion
+:END:
+
+Ce stage a été pour moi l'occasion de découvrir le monde de la recherche et du calcul haute performance. J'ai appris à utiliser des runtimes spécifiques au HPC et acquis des compétences en parallélisme. Durant ce stage, j'ai pu discuter et échanger avec des chercheurs académiques ou industriels, des ingénieurs de recherche ainsi que des doctorants et des stagiaires. En résumé ce stage a été très enrichissant, me permettant de me faire une meilleure idée du monde de la recherche en HPC.
+
+#+latex: \pagebreak
+#+print_bibliography: https://orgmode.org/manual/Citation-handling.html
+#+latex: \pagebreak
+
+#+latex: \appendix
+
+* Reproductibilité
+:PROPERTIES:
+:CUSTOM_ID: annexe
+:END:
+Durant tout le stage, on m'a encouragé à essayer de rendre mes expériences au maximum reproductibles c'est-à-dire d'utiliser des outils qui permettent de reproduire un environnement le plus identique possible pour chaque personne qui voudrait essayer de relancer le code produit durant le stage. Pour le stage, on l'a fait avec Guix qui a été conçu dans cet objectif. Dans la suite de ce paragraphe, je vais donner les commandes qui permettent de recréer l'environnement que j'ai utilisé.
+
+#+BEGIN_SRC shell
+git clone --recursive git@gitlab.inria.fr:composyx/composyx-private.git
+git checkout c0daf734c76a493c940214945d0a6c3e61e09a6f
+guix time-machine -C .guix-extra/channels-fixed.scm -- shell --pure -D composyx starpu
+mkdir -p build && cd build
+cmake ..
+make -j $(nproc) composyx_distgemm
+#+END_SRC
+
+Avec l'exécutable produit, voici les erreurs obtenues sur ma machine en fonction des algorithmes utilisés :
+** GEMM original avec tâches
+#+BEGIN_SRC
+$ ./src/driver/C++/composyx_distgemm -X 10 -Y 10 -Z 10 -S 10 -D 10 -a 1 --check-centr
+...
+Check (centralized) result relative error:
+Id;rel_err_centr
+0;9.746993e-17
+#+END_SRC
+
+** GEMM en tache pure avec OpenMP
+:PROPERTIES:
+:CUSTOM_ID: pureTaskRep
+:END:
+
+#+BEGIN_SRC
+$ ./src/driver/C++/composyx_distgemm -X 10 -Y 10 -Z 10 -S 10 -D 10 -a 2 --check-centr
+...
+Check (centralized) result relative error:
+Id;rel_err_centr
+0;9.914337e-17
+#+END_SRC
+
+** GEMM StarPU avec dépendances implicites sur les données
+:PROPERTIES:
+:CUSTOM_ID: starpuRep
+:END:
+
+
+#+BEGIN_SRC
+$ ./src/driver/C++/composyx_distgemm -X 10 -Y 10 -Z 10 -S 10 -D 10 -a 3 --check-centr
+...
+Check (centralized) result relative error:
+Id;rel_err_centr
+0;9.914337e-17
+#+END_SRC
+
+** GEMM StarPU avec les dépendances explicites
+:PROPERTIES:
+:CUSTOM_ID: expStapuRep
+:END:
+
+#+BEGIN_SRC
+$ ./src/driver/C++/composyx_distgemm -X 10 -Y 10 -Z 10 -S 10 -D 10 -a 4 --check-centr
+...
+Check (centralized) result relative error:
+Id;rel_err_centr
+0;9.914337e-17
+#+END_SRC
+
+** CMR
+Le temps peut changer mais les erreurs doivent rester à 0.
+#+BEGIN_SRC
+$ make composyx_demo_cmr
+$ ./src/examples/composyx_demo_cmr
+
+Rank=0 World Size=1
+Genrating Matrix...
+Matrix Initialisation...
+8, 8, 8, 
+8, 8, 8, 
+GEMM with pipeline
+Error Report:
+	C = A*B   err = 0
+	F = E*D   err = 0
+Time Repport:
+	- Submision : 292 ms
+	- Compute: 560 ms
+GEMM without pipeline
+Error Report:
+	C = A*B   err = 0
+	F = E*D   err = 0
+Time Repport:
+	Compute: 619 ms
+C = A*B; E = C*D
+With pipline
+Error Report:
+	(A*B)*D   err = 0
+Time Repport:
+	- Submision : 186 ms
+	- Compute: 509 ms
+Without pipline
+Error Report:
+	(A*B)*D   err = 0
+Time Repport:
+	- Compute: 562 ms
+Finalize...
+
+#+END_SRC
+
+* Codes sources
+:PROPERTIES:
+:CUSTOM_ID: src
+:END:
+
+** Premier GEMM en tâches OpenMP
+:PROPERTIES:
+:CUSTOM_ID: srcOmpTasks
+:END:
+
+#+begin_src C++
+int main(int argc, char **argv){
+  {
+      using namespace maphys;
+      // Init des variables
+      int MAX = 10;
+      int BLOCK_SIZE, m, n, p;
+
+      //Initialisation des variables
+      // ...
+
+      DenseMatrix<double> A(m, n); // Init avec des valeurs aléatoire
+      DenseMatrix<double> B(n, p); // Init avec des valeurs aléatoire
+      DenseMatrix<double> C(m, p); // Initialisé à 0
+
+      DenseMatrix<double> verifC = A * B; // Valeur de véfification
+
+      auto t2 = high_resolution_clock::now();
+
+      // Calcule
+#pragma omp parallel master
+      {
+#pragma omp taskloop collapse(2) shared(C)
+        for (int i = 0; i < m; i += BLOCK_SIZE) {
+        for (int j = 0; j < p; j += BLOCK_SIZE) {
+            DenseMatrix<double> tmpA = A.get_block_view(i, 0, BLOCK_SIZE, n);
+            DenseMatrix<double> tmpB = B.get_block_view(0, j, n, BLOCK_SIZE);
+            C.get_block_view(i, j, BLOCK_SIZE, BLOCK_SIZE) = tmpA * tmpB;
+            }
+        }
+      }
+  }
+
+  auto t3 = high_resolution_clock::now();
+
+    // On vérifie le résultat
+  if ((verifC - C).norm() > 10e-15) {
+      cout << "Matrice différante\n";
+      return EXIT_FAILURE;
+  }
+
+    // Affichage des résutat et des meusure de temps
+    // ...
+}
+
+#+end_src
+
+** Ajout des tâches dans Composyx
+:PROPERTIES:
+:CUSTOM_ID: srcFirstTasks
+:END:
+
+#+begin_src C++
+#pragma omp parallel master
+
+for(int i = 0; i < static_cast<int>(M_blocks); i++) {
+  for(int j = 0; j < static_cast<int>(N_blocks); j++) {
+    for(int k = 0; k < static_cast<int>(K_blocks); k++) {
+      if(taskmap(i, j, k) == rank) {
+        // Recv A(i, k)
+        LocMatrix * Aik_ptr = get_block(i, k, tag_A(i, k), Aik_received, A);
+
+        // Recv B(k, j)
+        LocMatrix * Bkj_ptr = get_block(k, j, tag_B(k, j), Bkj_received, B);
+
+        // Send to C(i, j)
+        int dest_C = C.datamap(i, j);
+        if(dest_C == rank) {
+          auto& Cij = C.get_local_matrix(i, j);
+#pragma omp task shared(alpha, Aik_ptr, Bkj_ptr, Cij)
+          {
+            auto tmp =  (alpha * (*Aik_ptr) * (*Bkj_ptr));
+#pragma omp critical
+            Cij += tmp;
+          }
+        } else {
+          auto& aCijk   = Cijk_blocks_to_send.at(idx_C_send);
+#pragma omp task firstprivate(alpha, Aik_ptr, Bkj_ptr, aCijk, dest_C, idx_C_send) shared(comm, reqs_A, reqs_B, reqs_C)
+          {
+            aCijk = alpha * (*Aik_ptr) * (*Bkj_ptr);
+            int count = static_cast<int>(n_rows(aCijk) * n_cols(aCijk));
+            auto& req_ref = reqs_C.at(idx_C_send);
+            MMPI::isend(get_ptr(aCijk), count, tag_C(i, j, k), dest_C, req_ref, comm);
+          }
+          idx_C_send++;
+        }
+      }
+    } // i
+  } // j
+} // k
+#pragma omp taskwait
+#+end_src
+
+** Tâches pure dans composyx
+:PROPERTIES:
+:CUSTOM_ID: srcPureTasks
+:END:
+
+#+begin_src C++
+
+#pragma omp parallel
+#pragma omp single
+    {
+    // Envoie des blocs au autre processus
+    std::vector<MPI_Request> reqs_A;
+    A.isend_block_bad(true, taskmap, N_blocks, reqs_A, tag_A);
+    std::vector<MPI_Request> reqs_B;
+    B.isend_block_bad(false, taskmap, M_blocks, reqs_B, tag_B);
+
+    // Map
+    for (int i = 0; i < static_cast<int>(M_blocks); i++) {
+        for (int j = 0; j < static_cast<int>(N_blocks); j++) {
+            for (int k = 0; k < static_cast<int>(K_blocks); k++) {
+                if (taskmap(i, j, k) == rank) {
+#pragma omp task depend(out : A._access_task[i][k]) shared(A, tmpA, tag_A) firstprivate(i, j, k, rank)
+                    if (A.datamap(i, k) != rank && tmpA[i][k].get_n_rows() == 0) {
+                        tmpA[i][k] = LocMatrix(A.get_blocksize_col(i), A.get_blocksize_row(k));
+                        MMPI::recv(get_ptr(tmpA[i][k]), A.get_blocksize_col(i) * A.get_blocksize_row(k), tag_A(i, k), A.datamap(i, k), A.get_comm());
+                    } else if (tmpA[i][k].get_n_rows() == 0) {
+                        tmpA[i][k] = A.get_local_matrix(i, k);
+                    }
+
+                    // Réception de B sur le même principe que A
+
+#pragma omp task default(shared) depend(in : B._access_task[k][j]) depend(in : A._access_task[i][k]) depend(out : C_temp[i][j][k], C_temp[i][j][K]) firstprivate(i, j, k) shared(C_temp, alpha, tmpA, tmpB)
+                    {
+                        C_temp[i][j][k] = alpha * ((tmpA[i][k]) * (tmpB[k][j]));
+                    }
+#pragma omp task default(none) depend(in : C_temp[i][j][k]) shared(C_temp, tag_C, reqs_C, C) firstprivate(i, j, k, rank)
+                    if (C.datamap(i, j) != rank) {
+                        MMPI::isend(get_ptr(C_temp[i][j][k]), C.get_blocksize_row(j) * C.get_blocksize_col(i), tag_C(i, j, k), C.datamap(i, j), reqs_C.emplace_back(), C.get_comm());
+                    }
+                }
+            }
+        }
+    }
+
+    // Reduce
+    for (int i = 0; i < static_cast<int>(M_blocks); i++) {
+        for (int j = 0; j < static_cast<int>(N_blocks); j++) {
+            if (C.datamap(i, j) == rank) {
+                auto &Cij = C.get_local_matrix(i, j);
+                Cij *= beta;
+#pragma omp task depend(in : C_temp[i][j][K]) depend(inout : C._access_task[i][j]) shared(C, C_temp, tag_C, Cij) firstprivate(i, j, rank, taskmap, K_blocks)
+                for (int k = 0; k < static_cast<int>(K_blocks); k++) {
+                    if (taskmap(i, j, k) != rank) {
+                        C_temp[i][j][k] = LocMatrix(C.get_blocksize_col(j), C.get_blocksize_row(i));
+                        MMPI::recv(get_ptr(C_temp[i][j][k]), C.get_blocksize_col(j) * C.get_blocksize_row(i), tag_C(i, j, k), taskmap(i, j, k), C.get_comm());
+                        Cij += C_temp[i][j][k];
+                    } else {
+                        Cij += C_temp[i][j][k];
+                    }
+                }
+            }
+        }
+    }
+#pragma omp taskwait
+    MMPI::waitall(reqs_C);
+}
+
+#+end_src
+
+** Codelets StarPU
+:PROPERTIES:
+:CUSTOM_ID: starpuCodelets
+:END:
+
+#+begin_src C++
+static void gemm_cpu_func(void *buffers[], void *cl_args) {
+    // Get matrix size.
+    int Acols, Arows, Bcols, Brows, Ccols, Crows;
+    Scalar alpha;
+    starpu_codelet_unpack_args(cl_args, &Acols, &Arows, &Bcols, &Brows, &Ccols, &Crows, &alpha);
+
+    // retrive matrix data
+    struct starpu_vector_interface *MatA_vector = (starpu_vector_interface *)buffers[0];
+    LocMatrix A(Acols, Arows, (Scalar *)STARPU_VECTOR_GET_PTR(MatA_vector));
+
+    struct starpu_vector_interface *MatB_vector = (starpu_vector_interface *)buffers[1];
+    LocMatrix B(Bcols, Brows, (Scalar *)STARPU_VECTOR_GET_PTR(MatB_vector));
+
+    struct starpu_vector_interface *MatC_vector = (starpu_vector_interface *)buffers[2];
+    LocMatrix C(Ccols, Crows, (Scalar *)STARPU_VECTOR_GET_PTR(MatC_vector), true);
+
+    C = alpha * (A * B);
+}
+
+static void reduce_gemm_cpu_func(void *buffers[], void *cl_args) {
+
+    // Get number of matrix and size
+    int NbMatrix, Crows, Ccols;
+    Scalar beta;
+    starpu_codelet_unpack_args(cl_args, &NbMatrix, &Crows, &Ccols, &beta);
+
+    struct starpu_vector_interface *MatC_vector = (starpu_vector_interface *)buffers[NbMatrix];
+    LocMatrix Cij(Ccols, Crows, (double *)STARPU_VECTOR_GET_PTR(MatC_vector), true);
+
+    Cij *= beta;
+    for (int i = 0; i < NbMatrix; i++) {
+        struct starpu_vector_interface *tmp_vector = (starpu_vector_interface *)buffers[i];
+        LocMatrix tmp(Ccols, Crows, (double *)STARPU_VECTOR_GET_PTR(tmp_vector));
+
+        Cij += tmp;
+    }
+}
+
+struct starpu_codelet gemm_cl = {
+    .cpu_func = {gemm_cpu_func},
+    .nbuffers = 3,
+    .modes = {STARPU_R, STARPU_R, STARPU_W},
+};
+
+struct starpu_codelet reduce_gemm_cl = {
+    .cpu_func = {reduce_gemm_cpu_func},
+    .nbuffers = (int)K_blocks + 1,
+    .dyn_modes = reduce_modes,
+};
+#+end_src
+
+** Starpu GEMM
+:PROPERTIES:
+:CUSTOM_ID: starpuV1
+:END:
+
+#+begin_src C++
+  //Map
+  for(size_t i = 0; i < M_blocks; i++){
+    for(size_t j = 0; j < N_blocks; j++){
+      for(size_t k = 0; k < K_blocks; k++){
+  if(taskmap(i,j,k) == rank){
+    //Reception avec starPU pour la matrice A
+    if(A.datamap(i,k) != rank && tmpA[i][k].get_n_cols() == 0){
+      tmpA[i][k] = LocMatrix(A.get_blocksize_col(i), A.get_blocksize_row(k));
+      starpu_vector_data_register(&A_handlers[i][k], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpA[i][k]), A.get_blocksize_col(i)*A.get_blocksize_row(k), sizeof(Scalar));
+      //recv
+      starpu_mpi_irecv_detached(A_handlers[i][k], A.datamap(i,k), tag_A(i,k), A.get_comm(), NULL, NULL);
+    } else if ( tmpA[i][k].get_n_rows() == 0) {
+      tmpA[i][k] = A.get_local_matrix(i,k);
+      starpu_vector_data_register(&A_handlers[i][k], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpA[i][k]), A.get_blocksize_col(i)*A.get_blocksize_row(k), sizeof(Scalar));
+    }
+
+    //Même chose que A mais pour B.
+
+    tmpC[i][j][k] = LocMatrix(C.get_blocksize_col(i),C.get_blocksize_row(j));
+    starpu_vector_data_register(&C_handlers[i][j][k], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpC[i][j][k]), C.get_blocksize_col(i)*C.get_blocksize_row(j),sizeof(Scalar));
+
+    int a_rows = A.get_blocksize_row(i);
+    int a_cols = A.get_blocksize_col(k);
+    int b_rows = B.get_blocksize_row(k);
+    int b_cols = B.get_blocksize_col(j);
+
+    starpu_task_insert(&gemm_cl,
+           STARPU_R, A_handlers[i][k],
+           STARPU_R, B_handlers[k][j],
+           STARPU_W, C_handlers[i][j][k],
+           STARPU_VALUE, &a_rows, sizeof(a_rows),
+           STARPU_VALUE, &a_cols, sizeof(a_cols),
+           STARPU_VALUE, &b_rows, sizeof(b_rows),
+           STARPU_VALUE, &b_cols, sizeof(b_cols),
+           STARPU_VALUE, &b_rows, sizeof(b_rows),
+           STARPU_VALUE, &a_cols, sizeof(a_cols),
+           STARPU_VALUE, &alpha, sizeof(alpha),
+           0);
+    if(C.datamap(i,j)!=rank){
+      starpu_mpi_isend_detached(C_handlers[i][j][k], C.datamap(i,j), tag_C(i,j,k), C.get_comm(), NULL, NULL);
+    }
+  }// endif task map
+      }// end for k
+    } // end for j
+   } // end for i
+  //Reduce
+  for(size_t i = 0; i < M_blocks; i++){
+    for(size_t j = 0; j < N_blocks; j++){
+      //recv Cijk missing
+      if (C.datamap(i,j) == rank){
+  for(size_t k = 0; k < K_blocks; k++){
+    if(taskmap(i,j,k) != rank){
+      tmpC[i][j][k] = LocMatrix(C.get_blocksize_col(i),C.get_blocksize_row(j));
+      starpu_vector_data_register(&C_handlers[i][j][k], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpC[i][j][k]), C.get_blocksize_col(i)*C.get_blocksize_row(j),sizeof(Scalar));
+      starpu_mpi_irecv_detached(C_handlers[i][j][k], taskmap(i,j,k), tag_C(i,j,k), C.get_comm(), NULL, NULL);
+    }
+  }
+  //Get Cij
+  auto& Cij = C.get_local_matrix(i,j);
+  starpu_data_handle_t Cij_handler;
+  starpu_vector_data_register(&Cij_handler, STARPU_MAIN_RAM, (uintptr_t)get_ptr(C.get_local_matrix(i,j)),C.get_blocksize_col(i)*C.get_blocksize_row(j),sizeof(Scalar));
+  C_handlers[i][j][K_blocks] = Cij_handler;
+
+  int Crows = Cij.get_n_rows();
+  int Ccols = Cij.get_n_cols();
+  starpu_task_insert(&reduce_gemm_cl,
+             STARPU_DATA_ARRAY, C_handlers[i][j], K_blocks+1,
+             STARPU_VALUE, &K_blocks, sizeof(K_blocks),
+             STARPU_VALUE, &Crows, sizeof(Crows),
+             STARPU_VALUE, &Ccols, sizeof(Ccols),
+             STARPU_VALUE, &beta, sizeof(beta),
+             STARPU_EXECUTE_ON_WORKER, rank,
+             0);
+      }//end if
+    }//end for j
+   }// end for i
+#+end_src
+
+** StarPU avec dépendances explicite
+:PROPERTIES:
+:CUSTOM_ID: starpuV2
+:END:
+
+#+begin_src c++
+  //tasks storage
+  struct starpu_task* C_tasks[M_blocks][N_blocks][K_blocks];
+
+   for(size_t i = 0; i < M_blocks; i++){
+      for(size_t j = 0; j < N_blocks; j++){
+	for(size_t k = 0; k < K_blocks; k++){
+	  if(taskmap(i,j,k) == rank){
+	    // Generation des data_handler
+	    //...
+	    //data handler creation
+
+	  tmpC[i][j][k] = LocMatrix(C.get_blocksize_col(i),C.get_blocksize_row(j));
+	  starpu_vector_data_register(&C_handlers[i][j][k], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpC[i][j][k]), C.get_blocksize_col(i)*C.get_blocksize_row(j),sizeof(Scalar));
+
+	  int a_rows = A.get_blocksize_row(i);
+	  int a_cols = A.get_blocksize_col(k);
+	  int b_rows =  A.get_blocksize_row(k);
+	  int b_cols =  A.get_blocksize_col(j);
+
+	  C_tasks[i][j][k] = starpu_task_build(&gemm_cl,
+						   STARPU_R, A_handlers[i][k],
+						   STARPU_R, B_handlers[k][j],
+						   STARPU_W, C_handlers[i][j][k],
+						   STARPU_VALUE, &a_rows, sizeof(a_rows),
+						   STARPU_VALUE, &a_cols, sizeof(a_cols),
+						   STARPU_VALUE, &b_rows, sizeof(b_rows),
+						   STARPU_VALUE, &b_cols, sizeof(b_cols),
+						   STARPU_VALUE, &b_rows, sizeof(b_rows),
+						   STARPU_VALUE, &a_cols, sizeof(a_cols),
+						   STARPU_VALUE, &alpha, sizeof(alpha),
+						   0);
+
+	  if(C.datamap(i,j)!=rank){
+	    starpu_mpi_isend_detached(C_handlers[i][j][k], C.datamap(i,j), tag_C(i,j,k), C.get_comm(), NULL, NULL);
+	  }
+	}// endif task map
+      }// end for k
+    } // end for j
+  } // end for i
+    struct starpu_task* c_test[M_blocks][N_blocks];
+    for(size_t i = 0; i < M_blocks; i++){
+      for(size_t j = 0; j < N_blocks; j++){
+	if (C.datamap(i,j) == rank){
+	  struct starpu_task* dependency[K_blocks];
+	  int nb_deps = 0;
+	  for(size_t k = 0; k < K_blocks; k++){
+	    if (C_tasks[i][j][k] != NULL){
+	      dependency[nb_deps] = C_tasks[i][j][k];
+	      nb_deps ++;
+	    }
+	    //Reception des k manquant
+	    //...
+	  }
+
+	  //Get Cij
+	  auto& Cij = C.get_local_matrix(i,j);
+	  starpu_data_handle_t Cij_handler;
+	  starpu_vector_data_register(&Cij_handler, STARPU_MAIN_RAM, (uintptr_t)get_ptr(C.get_local_matrix(i,j)),C.get_blocksize_col(i)*C.get_blocksize_row(j),sizeof(Scalar));
+	  C_handlers[i][j][K_blocks] = Cij_handler;
+
+	  int Crows = Cij.get_n_rows();
+	  int Ccols = Cij.get_n_cols();
+	  c_test[i][j] = starpu_task_build(&reduce_gemm_cl,
+				 STARPU_DATA_ARRAY, C_handlers[i][j], K_blocks+1,
+				 STARPU_VALUE, &K_blocks, sizeof(K_blocks),
+				 STARPU_VALUE, &Crows, sizeof(Crows),
+				 STARPU_VALUE, &Ccols, sizeof(Ccols),
+				 STARPU_VALUE, &beta, sizeof(beta),
+				 STARPU_EXECUTE_ON_WORKER, rank,
+				 0);
+
+	  starpu_task_declare_deps_array(c_test[i][j], nb_deps-1, dependency);
+
+	}//end if
+      }//end for j
+    }// end for i
+  
+  //On poste les tâches à StarPU
+    for(size_t i = 0; i < M_blocks; i++){
+      for(size_t j = 0; j < N_blocks; j++){
+	for(size_t k = 0; k < K_blocks; k++){
+	  if(taskmap(i,j,k) == rank)
+	    starpu_task_submit(C_tasks[i][j][k]);
+	}
+	if(C.datamap(i,j) == rank)
+	  starpu_task_submit(c_test[i][j]);
+      }
+  }
+  starpu_mpi_wait_for_all(C.get_comm());
+#+end_src
+
+*** CMR
+:PROPERTIES:
+:CUSTOM_ID: cmr
+:END:
+
+#+begin_src c++
+static void cmr(const PartDenseMatrix<LMA, DA> &A, const PartDenseMatrix<LMB, DB> &B, PartDenseMatrix<LMC, DC> &C, TMapFunc taskmap, struct cmrPiplineData &tmpData, starpu_codelet &map_cl, starpu_codelet &reduce_cl, bool pipliner = false, Scalar alpha = Scalar{1}, Scalar beta = Scalar{0}) {
+  // Check starPU init for matrix
+  COMPOSYX_ASSERT(A.get_comm() == B.get_comm(), "PartDenseMatrix::dense_dist_gemm A and B must have same MPI communicator");
+  COMPOSYX_ASSERT(A.get_comm() == C.get_comm(), "PartDenseMatrix::dense_dist_gemm A and C must have same MPI communicator")
+  COMPOSYX_ASSERT(A.get_starpu_handles_status() == true, "PartDenseMatrix::dense_dist_gemm StarPU handles not init for A");
+  COMPOSYX_ASSERT(B.get_starpu_handles_status() == true, "PartDenseMatrix::dense_dist_gemm StarPU handles not init for B");
+  COMPOSYX_ASSERT(C.get_starpu_handles_status() == true, "PartDenseMatrix::dense_dist_gemm StarPU handles not init for C")
+  // Matrix Size
+  size_t M_blocks = C.get_n_rows_block();
+  size_t N_blocks = C.get_n_cols_block();
+  size_t K_blocks = A.get_n_cols_block()
+  // StarPU access mode
+  enum starpu_data_access_mode map_modes[] = {STARPU_R, STARPU_R, STARPU_W};
+  enum starpu_data_access_mode reduce_modes[K_blocks + 1] = {STARPU_R};
+  std::fill_n(reduce_modes, K_blocks, STARPU_R);
+  reduce_modes[K_blocks] = STARPU_W
+  // setup Codelet(s) StarPU
+  // Map
+  map_cl.nbuffers = 3;
+  map_cl.dyn_modes = map_modes
+  // Reduce
+  reduce_cl.nbuffers = (int)K_blocks + 1;
+  reduce_cl.dyn_modes = reduce_modes
+  // Worker ID
+  int rank = starpu_mpi_world_rank()
+  // Tag for communication
+  auto tag_A = [&](int i, int k) {
+    return i * K_blocks + k + 1;
+  };
+  
+  const int offset_A = tag_A(M_blocks, K_blocks)
+  auto tag_B = [&](int k, int j) {
+    return offset_A + k * N_blocks + j;
+  };
+  
+  const int offset_B = tag_B(K_blocks, N_blocks)
+  auto tag_C = [&](int i, int j, int k) {
+    return offset_B + i * N_blocks * K_blocks + j * K_blocks + k;
+  }
+  
+  const int offset_C = tag_C(M_blocks, K_blocks, N_blocks)
+  auto tag_Ck = [&](int i, int j) {
+    return offset_C + i * N_blocks + j;
+  }
+
+  // Send data to other threads
+  std::vector<MPI_Request> reqs_A;
+  A.isend_block_starpu(true, taskmap, N_blocks, tag_A);
+  std::vector<MPI_Request> reqs_B;
+  B.isend_block_starpu(false, taskmap, M_blocks, tag_B)
+
+  // Map
+  for (size_t i = 0; i < M_blocks; i++) {
+    for (size_t j = 0; j < N_blocks; j++) {
+      for (size_t k = 0; k < K_blocks; k++) {
+        if (taskmap(i, j, k) == rank) {
+          // A*B (StarPU task)
+          
+          if (A.datamap(i, k) != rank && tmpData.tmpA[i][k].get_n_cols() == 0) {
+            tmpData.tmpA[i][k] = LocMatrix(A.get_blocksize_col(k), A.get_blocksize_row(i));
+            starpu_vector_data_register(&tmpData.A_handlers[i][k], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpData.tmpA[i][k]), A.get_blocksize_col(k) * A.get_blocksize_row(i), sizeof(Scalar));
+            // recv
+            starpu_mpi_irecv_detached(tmpData.A_handlers[i][k], A.datamap(i, k), tag_A(i, k), A.get_comm(), NULL, NULL);
+          } else if (tmpData.tmpA[i][k].get_n_rows() == 0) {
+            auto tmp = A.get_starpu_handle(i, k)
+            tmpData.A_handlers[i][k] = tmp;
+          }
+          
+          if (B.datamap(k, j) != rank && tmpData.tmpB[k][j].get_n_rows() == 0) {
+            tmpData.tmpB[k][j] = LocMatrix(B.get_blocksize_col(j), B.get_blocksize_row(k));
+            starpu_vector_data_register(&tmpData.B_handlers[k][j], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpData.tmpB[k][j]), B.get_blocksize_col(j) * B.get_blocksize_row(k), sizeof(Scalar));
+            // recv
+            starpu_mpi_irecv_detached(tmpData.B_handlers[k][j], B.datamap(k, j), tag_B(k, j), B.get_comm(), NULL, NULL);
+          } else if (tmpData.tmpB[k][j].get_n_rows() == 0) {
+            tmpData.B_handlers[k][j] = B.get_starpu_handle(k, j);
+          }
+          
+          // data handler creation
+          tmpData.tmpC[i][j][k] = LocMatrix(C.get_blocksize_col(j), C.get_blocksize_row(i));
+          starpu_vector_data_register(&tmpData.C_handlers[i][j][k], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpData.tmpC[i][j][k]), C.get_blocksize_col(j) * C.get_blocksize_row(i), sizeof(Scalar))
+          int a_rows = A.get_blocksize_row(i);
+          int a_cols = A.get_blocksize_col(k);
+          int b_rows = B.get_blocksize_row(k);
+          int b_cols = B.get_blocksize_col(j);
+          int c_rows = C.get_blocksize_row(i);
+          int c_cols = C.get_blocksize_col(j)
+          starpu_task_insert(&map_cl,
+                             STARPU_R, tmpData.A_handlers[i][k],
+                             STARPU_R, tmpData.B_handlers[k][j],
+                             STARPU_W, tmpData.C_handlers[i][j][k],
+                             STARPU_VALUE, &a_rows, sizeof(a_rows),
+                             STARPU_VALUE, &a_cols, sizeof(a_cols),
+                             STARPU_VALUE, &b_rows, sizeof(b_rows),
+                             STARPU_VALUE, &b_cols, sizeof(b_cols),
+                             STARPU_VALUE, &c_rows, sizeof(c_rows),
+                             STARPU_VALUE, &c_cols, sizeof(c_cols),
+                             STARPU_VALUE, &alpha, sizeof(alpha),
+                             STARPU_CALLBACK, NULL,
+                             0);
+          if (C.datamap(i, j) != rank) {
+            starpu_mpi_isend_detached(tmpData.C_handlers[i][j][k], C.datamap(i, j), tag_C(i, j, k), C.get_comm(), NULL, NULL);
+          }
+        } // endif task map
+      } // end for k
+    } // end for j
+  } // end for i
+  // Reduc
+  for (size_t i = 0; i < M_blocks; i++) {
+    for (size_t j = 0; j < N_blocks; j++) {
+      // recv Cijk missing
+      if (C.datamap(i, j) == rank) {
+        for (size_t k = 0; k < K_blocks; k++) {
+          if (taskmap(i, j, k) != rank) {
+            tmpData.tmpC[i][j][k] = LocMatrix(C.get_blocksize_col(j), C.get_blocksize_row(i));
+            starpu_vector_data_register(&tmpData.C_handlers[i][j][k], STARPU_MAIN_RAM, (uintptr_t)get_ptr(tmpData.tmpC[i][j][k]), C.get_blocksize_col(j) * C.get_blocksize_row(i), sizeof(Scalar));
+            starpu_mpi_recv(tmpData.C_handlers[i][j][k], taskmap(i, j, k), tag_C(i, j, k), C.get_comm(), MPI_STATUS_IGNORE);
+          }
+        }
+        // Get Cij
+        auto &Cij = C.get_local_matrix(i, j);
+        tmpData.C_handlers[i][j][K_blocks] = C.get_starpu_handle(i, j)
+        int Crows = Cij.get_n_rows();
+        int Ccols = Cij.get_n_cols();
+        starpu_task_insert(&reduce_cl,
+                           STARPU_DATA_ARRAY, tmpData.C_handlers[i][j].data(), K_blocks + 1,
+                           STARPU_VALUE, &K_blocks, sizeof(K_blocks),
+                           STARPU_VALUE, &Crows, sizeof(Crows),
+                           STARPU_VALUE, &Ccols, sizeof(Ccols),
+                           STARPU_VALUE, &beta, sizeof(beta),
+                           0)
+      } // end if
+    } // end for j
+  } // end for i
+  
+  if (!pipliner) {
+    starpu_task_wait_for_all();
+    starpu_mpi_wait_for_all(C.get_comm());
+  }
+}
+#+end_src
+
+*** Initialisation pipeline CMR
+:PROPERTIES:
+:CUSTOM_ID: initCmr
+:END:
+
+#+begin_src c++
+static void Initialize(PartDenseMatrix<LMA, DA> &A, PartDenseMatrix<LMB, DB> &B, PartDenseMatrix<LMC, DC> &C, TMPstruct &tmpData, int rank) {
+  // Matrix Size
+  size_t M_blocks = C.get_n_rows_block();
+  size_t N_blocks = C.get_n_cols_block();
+  size_t K_blocks = A.get_n_cols_block();
+  
+  // Init A
+  tmpData.tmpA.resize(M_blocks);
+  tmpData.A_handlers.resize(M_blocks);
+  for (size_t i = 0; i < tmpData.tmpA.size(); i++) {
+    tmpData.tmpA[i].resize(K_blocks);
+    tmpData.A_handlers[i].resize(K_blocks);
+  } // end i
+
+  // Init B
+  tmpData.tmpB.resize(K_blocks);
+  tmpData.B_handlers.resize(K_blocks);
+  for (size_t i = 0; i < tmpData.tmpB.size(); i++) {
+    tmpData.tmpB[i].resize(N_blocks);
+    tmpData.B_handlers[i].resize(N_blocks);
+  } // end i
+
+  // Init C
+  tmpData.tmpC.resize(M_blocks);
+  tmpData.C_handlers.resize(M_blocks);
+  for (size_t i = 0; i < tmpData.tmpC.size(); i++) {
+    tmpData.tmpC[i].resize(N_blocks);
+    tmpData.C_handlers[i].resize(N_blocks);
+    for (size_t j = 0; j < tmpData.tmpC[i].size(); j++) {
+      tmpData.tmpC[i][j].resize(K_blocks);
+      tmpData.C_handlers[i][j].resize(K_blocks);
+    } // end j
+  } // end i
+
+  // Init starPU handlers
+  A.StarpuLocalInit(rank);
+  B.StarpuLocalInit(rank);
+  C.StarpuLocalInit(rank);
+}
+#+end_src

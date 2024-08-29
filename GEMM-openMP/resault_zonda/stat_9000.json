@@ -1,0 +1,6 @@
+[
+{"init":5365,"compute":958,"nbThread":64,"blockSize":1125}
+,
+{"init":5648,"compute":1312,"nbThread":1,"blockSize":9000}
+,
+]
