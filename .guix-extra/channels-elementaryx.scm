@@ -3,7 +3,7 @@
         (url "https://git.savannah.gnu.org/git/guix.git")
         (branch "master")
         (commit
-          "5a95cf76e1d0f9fdff5b232b42337c657b76d1d4")
+          "f9ed5788fda9288301550c641820d422e9ad1602")
         (introduction
           (make-channel-introduction
             "9edb3f66fd807b096b48283debdcddccfea34bad"
@@ -14,4 +14,4 @@
         (url "https://gitlab.inria.fr/guix-hpc/guix-hpc.git")
         (branch "master")
         (commit
-          "b7608db6ecff32e2569ed8407d62ac1485e2856a")))
+          "c6c79dd7802b373e59bb5082c1170ae019be2a46")))
