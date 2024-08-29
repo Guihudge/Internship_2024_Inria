@@ -10,4 +10,6 @@
         "texlive-tikz-timing"
         "texlive-wasysym"
         "texlive-wasy"
-        "texlive-beamer"))
+        "texlive-beamer"
+        "python-pygments"
+        "inkscape"))

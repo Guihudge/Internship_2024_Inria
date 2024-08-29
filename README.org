@@ -12,9 +12,9 @@ This repo contains, work done durring my internship at Concace team during Summe
     - Slides : [[./404.html]]
 - `presentation-workgroup/` : Slide for the presentation made at the workshop
     - Slides : [[./404.html]]
-- `rapport/` : Intership^ repport.
-    - PDF: [[./rapport/README.pdf]]
-    - HTML (missing pseudo-code): [[./rapport/index.html]]
+- `rapport/` : Intership repport.
+    - [[./rapport/README.pdf][PDF version]]
+    - [[./rapport/index.html][HTML version]]
 
 ** Work outside this repo
 All other work is in `composix-private` git repo on branch `feature/task_matrix_product`. This work include:
