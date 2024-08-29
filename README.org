@@ -6,12 +6,10 @@ This repo contains, work done during my internship at Concace team during Summer
 
 ** Structure
 
-- `bench/ ` : Random stuff relating to bench or earth-moon-sun activity (activité pour les 2nd)
-- `GEMM-openMP/` : First code writing during my internship, GEMM using openMP parallel for and python script to bench
-- `presentation-final/` : Slide used during the presentation of August 28
-    - Slides : [[./404.html]]
-- `presentation-workgroup/` : Slide for the presentation made at the workshop
-    - Slides : [[./404.html]]
+- `bench/ ` : Random stuff relating to bench or earth-moon-sun activity (activité pour les 2nd).
+- `GEMM-openMP/` : First code writing during my internship, GEMM using openMP parallel for and python script to bench.
+- `presentation-final/` : Slide used during the presentation of August 28 ([[./static/rawlatex/presentation-final.pdf][Slides]]).
+- `presentation-workgroup/` : Slide for the presentation made at the workshop ([[./static/rawlatex/presentation-workgroup.pdf][Slides]]).
 - `rapport/` : Internship report.
     - [[./rapport/README.pdf][PDF version]]
     - [[./rapport/index.html][HTML version]]
