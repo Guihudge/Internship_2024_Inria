@@ -1,0 +1,3 @@
+include:
+  - project: elementaryx/elementaryx-cicd
+    file: .elementaryx-gitlab-ci.yml
