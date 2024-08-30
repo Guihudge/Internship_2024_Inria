@@ -1,3 +1,5 @@
+#+INCLUDE: https://gitlab.inria.fr/elementaryx/emacs-elementaryx-ox-html-themes/-/raw/main/org/theme-bigblow-less.setup
+
 * GEMM OpenMP
 Fisrt GEMM in OpenMP using composyx as base for verfication.
 

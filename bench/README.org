@@ -1,3 +1,5 @@
+#+INCLUDE: https://gitlab.inria.fr/elementaryx/emacs-elementaryx-ox-html-themes/-/raw/main/org/theme-bigblow-less.setup
+
 * Bench subdirs
 This directory contains benchmark scripts, benchmark jupyter notebook and some 2nd activity files.
 
