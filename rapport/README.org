@@ -5,7 +5,7 @@
 #+OPTIONS: toc:nil
 # jinx-languages: "fr_FR"
 #+bibliography: bliblio.bib
-#+latex_header: \author{Guillaume Dindart \\ \small Gilles MARAIT (Encadrant), Emmanuel AGULLO (Encadrant) \\ Équipe Concace INRIA}
+#+latex_header: \author{Guillaume Dindart \\[1ex] \small Encadrants: Gilles MARAIT, Emmanuel AGULLO \\ Équipe Concace INRIA}
 #+latex_header: \usepackage[a4paper, hmarginratio=1:1,vmarginratio=1:1,left=20mm,top=22mm,columnsep=20pt]{geometry} % Document margins
 
 
@@ -47,6 +47,7 @@ L'Inria, Institut National de Recherche en Informatique et en Automatique est un
 # Présentation de l'équipe concace
 J'ai réalisé mon stage au sein de l'équipe Concace [cite:@concace] de l'Inria. L'équipe Concace est une collaboration entre l'Inria, le CERFACS et Airbus. Elle est présente sur trois sites : Paris, Toulouse et Bordeaux. Son objectif est de proposer des outils de hauts niveaux pour exploiter les architectures HPC modernes en poussant la composabilité des logiciels. Ceci dans le l'objectif final de permettre à des équipes loin du monde du HPC de réaliser des applications efficaces sur les supercalculateurs. L'un de leurs principaux projets est le développement de la bibliothèque composyx.
 
+Au cours de mon stage, j'ai été amenée à réaliser une mission à Toulouse pour rencontrer toute l'équipe est présenter l'avancée de mes travaux. J'ai réalisé une seconde présentation en fin de stage afin de présenter les différents travaux sur les qu'elle, j'ai travaillé et parler de leurs futures évolutions possibles.
 # TODO: Expliquer composabilité
 
 ** Composyx
@@ -128,15 +129,13 @@ C[i,j] += A[i,k] * B[k,j]
 # Bien que le code soit plus simple que pour le MapReduce, cette version permet moins de parallélisme. En effet, chaque ajout dans C_ij est conditionné par le fait que personne d'autre ne le fasse en même temps. De ce fait le MapReduce permet plus de parallélisation, mais avec un usage mémoire plus important et plus de communications. 
 
 *** MapReduce
-Le MapReduce est une métaopération, qui a été présenté dans le cadre du big data en 2008 par J Dean, S Ghemawat ([cite:@dean2008mapreduce]) puis repris dans le HPC. 
+Le MapReduce est une métaopération, qui a été présenté dans le cadre du big data en 2008 par J Dean, S Ghemawat [cite:@dean2008mapreduce] puis repris dans le HPC. 
 
 Le MapReduce combine un Map et un Reduce. Le Map est une opération qui consiste à appliquer une fonction de manière indépendante à un ensemble de valeurs indépendantes entre elles. Par exemple : ajouter 1 à chaque coefficient d'une matrice. Le Reduce est une opération de réduction sur un ensemble de données. Par exemple : faire la somme d'un tableau. L'intérêt de combiner ces deux opérations est d'augmenter le parallélisme. Le Map est intrinsèquement parallèle, chaque calcul de valeur étant indépendant des autres, on peut créer autant de tâches que de calculs qui pourront s'exécuter en parallèle. Le Reduce peut au début être exécuté avec beaucoup de parallélisme puis de moins en moins au cours de son exécution. L'intérêt est donc de ne pas attendre que tous les éléments du Map soient calculés, mais de commencer la réduction dès que des éléments compatibles ont fini d'être calculés. Prenons l'exemple de la multiplication de matrices.
 
 L'opération GEneral Matrix Multiplication (GEMM) représente la multiplication de deux matrices A et B, de manière plus générale la formule est : C = \alpha \times A \times B + C \times \beta. Cette formule nous impose la contrainte suivante sur la taille des matrices A(M \times K), B (K \times N) et le résultat C(M \times N). Je vais me servir du GEMM pour faire un exemple de MapReduce. Pour simplifier, on va prendre \alpha=1 et \beta=0 on a donc la formule générale suivante : C_{ij} = \sum_{k=0}^{K} A_{ik} B_{kj}. Pour appliquer le MapReduce avec la formule on va la séparer en deux étapes. La première, le Map, correspond à la multiplication des $A_{ik} \times B_{kj}$. La seconde, le Reduce, correspond à l'opération de somme. Pour l'exprimer dans le code, nous allons nous servir d'une matrice 3D de taille (M \times N \times K) pour stocker les résultats avant la réduction.
 
-Pour le reste du stage, je vais utiliser une variation qui permet d'utiliser des blocs, autrement dit des morceaux de la matrice afin d'exprimer plus de parallélisme. De manière générale le produit se calcule pour un bloc (i, j) de la matrice C avec la formule suivante : C_{ij} = \sum^K_{k=0} A_{ik}B_{kj}.
-
-En pseudo code :
+Pour le reste du stage, je vais utiliser une variation qui permet d'utiliser des blocs, autrement dit des morceaux de la matrice afin d'exprimer plus de parallélisme. De manière générale le produit se calcule pour un bloc (i, j) de la matrice C avec la formule suivante : C_{ij} = \sum^K_{k=0} A_{ik}B_{kj}. L'algorithme 2 présente le pseudo code correspondant.
 
 #+begin_export latex
 \begin{algorithm2e}[H]
@@ -221,9 +220,10 @@ Avec le code écrit, nous allons pouvoir vérifier le résultat produit ainsi qu
 # TODO: resultat d'exp + perfs
 #+ATTR_LATEX: :width 0.5\textwidth
 #+CAPTION: Benchemark de la version en "full task"
+#+NAME: perf2
 [[./images/composyx_full_task.png]]
 
-Comme nous le voyons sur ce graphe les performances sont proches de la version précédente. Cela semble cohérent car techniquement les deux codes sont très proches l'un de l'autre et les possibles gains du passage en tâches pures sont rattrapés par le fait que l'on soumet beaucoup plus de tâche il y a donc plus de travail de la part du runtime. Pour la validité des résultats on peut voir un exemple d'exécution en annexe ([[#pureTaskRep]]). Sur cet exemple, l'erreur calculée est d'environ 9e-17. Cette erreur provient de l'arrondi des nombres flottants, aussi connu sous le nom d'epsilon machine [cite:@enwiki:1225237390], on peut donc en déduire que le résultat est correct.
+Comme nous le voyons sur ce graphe ([[perf2]]) les performances sont proches de la version précédente. Cela semble cohérent car techniquement les deux codes sont très proches l'un de l'autre et les possibles gains du passage en tâches pures sont rattrapés par le fait que l'on soumet beaucoup plus de tâche il y a donc plus de travail de la part du runtime. Pour la validité des résultats on peut voir un exemple d'exécution en annexe ([[#pureTaskRep]]). Sur cet exemple, l'erreur calculée est d'environ 9e-17. Cette erreur provient de l'arrondi des nombres flottants, aussi connu sous le nom d'epsilon machine [cite:@enwiki:1225237390], on peut donc en déduire que le résultat est correct.
 
 # Remplacement des communication par des tâche de communication
 # Premier bench et campagne d'exp
@@ -231,18 +231,19 @@ Comme nous le voyons sur ce graphe les performances sont proches de la version p
 ** Passage de OpenMP à StarPU
 Dans l'objectif de passer à une version avec des dépendances purement explicites, nous avons migré le code de OpenMP-MPI vers StarPU. StarPU ne repose pas sur le principe de pragma, mais de codelet. Un codelet est un ou plusieurs morceaux de code effectuant une tâche donnée. L'intérêt d'utiliser un codelet plutôt que les pragma, réside dans le fait qu'il est possible de donner plusieurs versions du code différentes en fonction d'où on exécute le codelet. Par exemple un même codelet peut à la fois contenir le code CPU, un code CPU vectorisé et un code GPU. C'est lors de l'exécution que StarPU décidera lequel utiliser. C'est aussi grâce à ces codelets que StarPU génère le graphe de tâches quand on utilise les données pour générer l'ordre d'exécution. L'autre fonctionnalité de StarPU que l'on va utiliser, ce sont les communications intégrées. L'intérêt des communications intégrées, c'est qu'elles sont gérées par un processus dédié. De cette manière, elles interfèrent très peu avec le calcul.
 
-Voici les codelets utilisés dans le GEMM, l'un correspond au Map et l'autre au Reduce : [[#starpuCodelets]].
+Les codelets utilisés dans le GEMM, l'un correspond au Map et l'autre au Reduce peuvent être retrouvés dans l'[[#starpuCodelets]].
 
 
 Dans la première partie du code ci-dessus, nous avons défini deux fonctions. Ces deux fonctions sont des fonctions CPU qui ne sont pas vectorisées. La première fonction représente l'opération Map et la seconde l'opération Reduce. Si l'on regarde de plus près l'une de ces fonctions, on remarque qu'elles sont composées de deux parties. La première partie, qui récupère les données depuis le monde StarPU et la deuxième qui effectue le Map ou la réduction. Après la définition des deux fonctions, il y a deux structures de données. Ce sont ces structures qui créent le codelet. Elles contiennent les informations importantes des codelets, comme les fonctions à exécuter, le nombre de buffers passés à la fonction ainsi que leur mode d'accès. Dans ce cas, nous avons une fonction par codelet mais, lorsque nous utiliseront la génération automatique des noyaux, nous aurons plusieurs fonctions (vectorisée, GPU, ...).
 
-Maintenant que l'on a les codelets de définis, on peut les utiliser pour écrire le GEMM : [[#starpuV1]]
+Maintenant que l'on a les codelets de définis, on peut les utiliser pour écrire le GEMM, comme montré dans l'[[#starpuV1]]
 
 #+ATTR_LATEX: :width 0.5\textwidth
 #+CAPTION: Benchmark de la permière version StarPU
+#+NAME: perf3
 [[./images/composyx_starpu.png]]
 
-Les performances de la version StarPU sont en dessous des versions précédentes. StarPU est un runtime très complet et modulaire. Il permet de changer beaucoup de choses sous son capot tel que l'ordonnancement des tâches et les communications automatiques. Pour expliquer ces résultats, il est donc probable que les réglages de StarPU ne soient pas bons pour notre cas d'usage. L'objectif du stage se concentrant plutôt sur le fait de montrer que l'approche est valide, on ne va pas creuser plus pour augmenter les performances. L'utilisation de StarPU nous a permis de montrer que l'on est capable de changer de runtime et d'obtenir des résultats toujours valides ([[#starpuRep]]).
+Les performances de la version StarPU ([[perf3]]) sont en dessous des versions précédentes. StarPU est un runtime très complet et modulaire. Il permet de changer beaucoup de choses sous son capot tel que l'ordonnancement des tâches et les communications automatiques. Pour expliquer ces résultats, il est donc probable que les réglages de StarPU ne soient pas bons pour notre cas d'usage. L'objectif du stage se concentrant plutôt sur le fait de montrer que l'approche est valide, on ne va pas creuser plus pour augmenter les performances. L'utilisation de StarPU nous a permis de montrer que l'on est capable de changer de runtime et d'obtenir des résultats toujours valides ([[#starpuRep]]).
 
 # Ajout de StarPU au seins de composyx
 # Réécriture de du produit de gemme en tâche StarPU
@@ -258,14 +259,14 @@ Sur cette section, il n'y a pas de graphique de performance car le code précéd
 ** Opérateur Concurent Map Reduce (CMR)
 Pour la fin du stage, j'ai travaillé avec Hugo Dodelin afin de fusionner son travail sur la factorisation LU et les moteurs d'exécution présentés précédemment. Pour simplifier le développement, nous sommes partis sur la version StarPU avec des tâches basées sur les données. Nous avons choisi cette base car c'est celle qui nous semblait la plus robuste et nécessitant le moins de modifications. Pour garder le code le plus clair possible, on a créé un objet nommé `MatrixMatrix` dans lequel il y a l'opérateur CMR. Nous avons nommé cet opérateur Concurent Map Reduce (CMR). Cet opérateur effectue une opération de Map puis de Reduce. La différence par rapport au GEMM présenté avant est que l'on peut choisir quelle fonction utiliser pour le Map et le Reduce.
 
-Code du CMR: [[#cmr]]
+Code du CMR dans l'[[#cmr]].
 
-** Pipeline du CMR
+** Pipeline de plusieurs CMR
 Afin d'améliorer les performances de l'opérateur CMR, nous avons essayé de voir si on pouvait en enchaîner plusieurs en évitant la synchronisation entre eux, autrement dit, de les pipeliner. L'idée est de pouvoir réaliser plusieurs CMR indépendants en même temps, ou dans le cas d'opérations dépendantes, de ne pas devoir attendre que l'entièreté du calcul précédant soit terminée avant de démarrer le suivant. La plus grande difficulté a été de gérer les variables temporaires utilisées par le CMR car nous ne pouvions plus nous reposer sur les portées des variables. Nous avons alors décidé de travailler en trois temps, l'initialisation, le calcul et la finalisation avec une seule synchronisation entre le calcul et la finalisation. Plus précisément, l'initialisation s'occupe d'allouer les variables temporaires utilisées par les calculs. Le calcul va générer les différentes tâches de Map et Reduce. Pour finir, la finalisation va s'occuper de libérer la mémoire allouée. Grâce à ce travail en trois temps, nous pouvons générer les tâches de calcul sans avoir à attendre à la fin de chaque opérateur.
 
 Le code de la version pipeliné, nécessite d'ajouter une initialisation afin de conserver correctement les structures temporaires utilisées par les calculs.
 
-Code de l'initialisation: [[#initCmr]]
+Code de l'initialisation dans l'[[#initCmr]].
 
 Avec cette modification réalisée, nous observons une réduction d'environ 10% du temps de calcul. Cela se confirme grâce aux statistiques générées pendant l'exécution où le temps d'attente des CPU est inférieur en cas d'utilisation de la pipeline.
 
