@@ -1,5 +1,9 @@
 #+INCLUDE: https://gitlab.inria.fr/elementaryx/emacs-elementaryx-ox-html-themes/-/raw/main/org/theme-bigblow-less.setup
 
+HTML version : [[https://concace.gitlabpages.inria.fr/internship/internship-2024-m1-guillaume-dindart/]]
+PDF version : [[https://concace.gitlabpages.inria.fr/internship/internship-2024-m1-guillaume-dindart/README.pdf]]
+Source : [[https://gitlab.inria.fr/concace/internship/internship-2024-m1-guillaume-dindart/]]
+
 * Internship 2024, Guillaume Dindart
 
 This repo contains, work done during my internship at Concace team during Summer 2024.
