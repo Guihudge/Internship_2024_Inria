@@ -1,0 +1,15 @@
+* Bench subdirs
+This directory contains benchmark scripts, benchmark jupyter notebook and some 2nd activity files.
+
+** How to use
+*** Install jupyter lab
+Using GUIX (not tested)
+#+begin_src bash
+cd bench/ # Go to bench directory
+guix shell --pure python python-virtualenv bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+jupyter lab .
+#+end_src
+open link print in the repo
