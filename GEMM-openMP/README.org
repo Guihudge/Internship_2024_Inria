@@ -1,0 +1,4 @@
+* GEMM OpenMP
+Fisrt GEMM in OpenMP using composyx as base for verfication.
+
+Not reproductible due to hard codded path in Cmake.
